@@ -1,0 +1,19 @@
+#日志记录
+logging:
+  level:
+    org:
+      springframework:
+        web: DEBUG
+      hibernate: ERROR
+spring: 
+  mvc: 
+    date-format: yyyy-MM-dd HH:mm:ss
+  jackson: 
+    #property-naming-strategy: CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES
+    date-format: yyyy-MM-dd HH:mm:ss 
+    time-zone:  GMT+8
+  session:
+    store-type: redis      
+  profiles:
+    #active: dev
+   active: prod
