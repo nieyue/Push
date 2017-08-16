@@ -9,6 +9,7 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.nieyue.exception.MySessionException;
 import com.nieyue.exception.TestApiException;
 import com.nieyue.util.MyDESutil;
 
@@ -32,18 +33,18 @@ public class TestApiControllerInterceptor implements HandlerInterceptor {
         if (!(handler instanceof HandlerMethod)) {
             return true;
         }
-       //如果是测试接口
+       //测试接口
        if(request.getRequestURL().indexOf("test")>-1){
-    	   if(testApi){
-    		   return true;
+    	   if(!testApi){
+    		   throw new TestApiException();
     	   }
-    	   
-       }
-       //如果是内部授权
-       if(request.getParameter("auth").equals(MyDESutil.getMD5(1000))){
     	   return true;
        }
-       throw new TestApiException();
+       //没有内部权限auth
+       if(request.getParameter ("auth")==null||!request.getParameter("auth").equals(MyDESutil.getMD5(1000))){
+    	   throw new MySessionException();
+       }
+      return true;
 	}
 
 	@Override
