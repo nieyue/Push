@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nieyue.jpush.PushTemplate;
-import com.nieyue.util.MyDESutil;
 import com.nieyue.util.ResultUtil;
 import com.nieyue.util.StateResultList;
 
@@ -38,7 +37,7 @@ public class PushController {
 	 * getsession
 	 * @return
 	 */
-	@RequestMapping(value={"/getSession"})
+	@RequestMapping(value={"/test/getSession"})
 	public String getSession(
 			HttpSession session,
 			HttpServletResponse response
@@ -53,20 +52,17 @@ public class PushController {
 	 * @throws APIRequestException 
 	 * @throws APIConnectionException 
 	 */
-	@RequestMapping(value={"/sendMessage"})
-	public StateResultList sendMessage(
-			@RequestParam("auth") String auth,
+	@RequestMapping(value={"/sendAllMessage"})
+	public StateResultList sendAllMessage(
+			@RequestParam("contentType") String contentType ,
 			@RequestParam("content") String content,
 			HttpSession session
 			) throws APIConnectionException, APIRequestException{
-		List<PushResult> l=new ArrayList<PushResult>();
-		if(auth.equals(MyDESutil.getMD5(1000))){
-			PushPayload pp= pushTemplate.buildPushObject_all_all_message(content);
+			List<PushResult> l=new ArrayList<PushResult>();
+			PushPayload pp= pushTemplate.buildPushObject_all_all_message(contentType,content);
 			PushResult r = pushTemplate.init(pp);
 			l.add(r);
 		return ResultUtil.getSlefSRSuccessList(l);
-		}
-		return ResultUtil.getSlefSRFailList(l);
 		
 	}
 	/**
@@ -76,13 +72,35 @@ public class PushController {
 	 * @throws APIRequestException 
 	 * @throws APIConnectionException 
 	 */
-	@RequestMapping(value={"/test/sendMessage"})
+	@RequestMapping(value={"/sendMessage"})
+	public StateResultList sendMessage(
+			@RequestParam("acountId") Integer acountId ,
+			@RequestParam("contentType") String contentType ,
+			@RequestParam("content") String content,
+			HttpSession session
+			) throws APIConnectionException, APIRequestException{
+			List<PushResult> l=new ArrayList<PushResult>();
+			PushPayload pp= pushTemplate.buildPushObject_all_alias_alert(acountId,contentType, content);
+			PushResult r = pushTemplate.init(pp);
+			l.add(r);
+			return ResultUtil.getSlefSRSuccessList(l);
+		
+	}
+	/**
+	 * buildPushObject_all_all_message
+	 * 所有推送
+	 * @return
+	 * @throws APIRequestException 
+	 * @throws APIConnectionException 
+	 */
+	@RequestMapping(value={"/test/sendAllMessage"})
 	public StateResultList testSendMessage(
+			@RequestParam("contentType") String contentType ,
 			@RequestParam("content") String content,
 			HttpSession session
 			) throws APIConnectionException, APIRequestException{
 		List<PushResult> l=new ArrayList<PushResult>();
-			PushPayload pp= pushTemplate.buildPushObject_all_all_message(content);
+			PushPayload pp= pushTemplate.buildPushObject_all_all_message(contentType,content);
 			PushResult r = pushTemplate.init(pp);
 			l.add(r);
 			return ResultUtil.getSlefSRSuccessList(l);

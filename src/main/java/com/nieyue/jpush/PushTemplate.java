@@ -55,20 +55,33 @@ public class PushTemplate {
      * 快捷地构建推送对象：所有平台，所有设备，内容为 content 的消息。
      * @return
      */
-    public  PushPayload buildPushObject_all_all_message( String content) {
-    	return PushPayload.messageAll(content);
+    public  PushPayload buildPushObject_all_all_message(String contentType, String content) {
+    	return  PushPayload.newBuilder()
+    	        .setPlatform(Platform.all())
+    	        .setAudience(Audience.all())
+    	        .setMessage(Message.newBuilder()
+    	                .setMsgContent(content)
+    	                .setContentType(contentType)
+    	                .build())
+    	        .build();
     			
     }
     /**
-     * 构建推送对象：所有平台，推送目标是别名为 "alias1"，通知内容为 ALERT。
+     * 构建推送对象：所有平台，推送目标是别名为 "id"，通知内容为 ALERT。
      * @return
      */
-    public  PushPayload buildPushObject_all_alias_alert() {
-        return PushPayload.newBuilder()
-                .setPlatform(Platform.all())
-                .setAudience(Audience.alias("alias1"))
-                .setNotification(Notification.alert("ALERT"))
-                .build();
+    public  PushPayload buildPushObject_all_alias_alert(Integer id,String contentType,String content) {
+    	return  PushPayload.newBuilder()
+        .setPlatform(Platform.all())
+        .setAudience(Audience.alias(id.toString()))
+        
+        //.setMessage(Message.content(content))
+        .setMessage(Message.newBuilder()
+                .setMsgContent(content)
+                .setContentType(contentType)
+                .build())
+       // .setNotification(Notification.alert("ALERT"))
+        .build();
     }
     /**
      * 构建推送对象：平台是 Android，目标是 tag 为 "tag1" 的设备，
@@ -149,7 +162,9 @@ public class PushTemplate {
     	JPushClient jpushClient = new JPushClient("e8e6f60d043a1b4cace16cbf", "011d1f544fb77063b9192129", null, ClientConfig.getInstance());
     	String content = HttpClientUtil.doGet("http://www.newzhuan.com/article/list?pageSize=1");
     	   // For push, all you need do is to build PushPayload object.
-    	    PushPayload payload =new PushTemplate().buildPushObject_all_all_message(content);
+    	// PushPayload payload =new PushTemplate().buildPushObject_all_all_message("新闻",content);
+    	//PushPayload payload =new PushTemplate().buildPushObject_all_alias_alert(1431,"积分", content);
+    	PushPayload payload =new PushTemplate().buildPushObject_all_alias_alert(1431,"收徒", content);
 
     	    try {
     	        PushResult result = jpushClient.sendPush(payload);
