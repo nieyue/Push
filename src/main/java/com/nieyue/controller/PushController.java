@@ -46,28 +46,30 @@ public class PushController {
 		
 	}
 	/**
-	 * buildPushObject_all_all_message
-	 * 所有推送
+	 * buildPushObject_all_alias_message
+	 * 所有消息
 	 * @return
 	 * @throws APIRequestException 
 	 * @throws APIConnectionException 
 	 */
 	@RequestMapping(value={"/sendAllMessage"})
 	public StateResultList sendAllMessage(
-			@RequestParam("contentType") String contentType ,
+			@RequestParam("businessType") String businessType ,
+			@RequestParam("title") String title,
 			@RequestParam("content") String content,
+			@RequestParam("businessId") Integer businessId,
 			HttpSession session
 			) throws APIConnectionException, APIRequestException{
 			List<PushResult> l=new ArrayList<PushResult>();
-			PushPayload pp= pushTemplate.buildPushObject_all_all_message(contentType,content);
+			PushPayload pp= pushTemplate.buildPushObject_all_alias_message(businessId,businessType,title,content);
 			PushResult r = pushTemplate.init(pp);
 			l.add(r);
 		return ResultUtil.getSlefSRSuccessList(l);
 		
 	}
 	/**
-	 * buildPushObject_all_all_message
-	 * 所有推送
+	 * buildPushObject_id_alias_message
+	 * 单人消息
 	 * @return
 	 * @throws APIRequestException 
 	 * @throws APIConnectionException 
@@ -75,32 +77,82 @@ public class PushController {
 	@RequestMapping(value={"/sendMessage"})
 	public StateResultList sendMessage(
 			@RequestParam("acountId") Integer acountId ,
-			@RequestParam("contentType") String contentType ,
+			@RequestParam("businessId") Integer businessId ,
+			@RequestParam("title") String title ,
+			@RequestParam("businessType") String businessType ,
 			@RequestParam("content") String content,
 			HttpSession session
 			) throws APIConnectionException, APIRequestException{
 			List<PushResult> l=new ArrayList<PushResult>();
-			PushPayload pp= pushTemplate.buildPushObject_all_alias_alert(acountId,contentType, content);
+			PushPayload pp= pushTemplate.buildPushObject_id_alias_message(acountId,businessId,businessType,title, content);
 			PushResult r = pushTemplate.init(pp);
 			l.add(r);
 			return ResultUtil.getSlefSRSuccessList(l);
 		
 	}
 	/**
+     * 构建推送对象：所有，通知内容为 content。
+     * @param businessId 业务Id
+     * @param businessType 业务类型
+     * @param content 内容
+     * @return
+     */
+	@RequestMapping(value={"/sendAllAlert"})
+	public StateResultList sendAllAlert(
+			@RequestParam("businessId") Integer businessId,
+			@RequestParam("businessType") String businessType ,
+			@RequestParam("title") String title,
+			@RequestParam("content") String content,
+			HttpSession session
+			) throws APIConnectionException, APIRequestException{
+		List<PushResult> l=new ArrayList<PushResult>();
+		PushPayload pp= pushTemplate.buildPushObject_all_alias_alert(businessId,businessType,title,content);
+		PushResult r = pushTemplate.init(pp);
+		l.add(r);
+		return ResultUtil.getSlefSRSuccessList(l);
+		
+	}
+	/**
+     * 构建推送对象：acountId，推送目标是别名为 "acountId"，通知内容为 content。
+     * @param acountId 业务接受者
+     * @param businessId 业务Id
+     * @param businessType 业务类型
+     * @param content 内容
+     * @return
+     */
+	@RequestMapping(value={"/sendAlert"})
+	public StateResultList sendAlert(
+			@RequestParam("acountId") Integer acountId ,
+			@RequestParam("businessId") Integer businessId ,
+			@RequestParam("title") String title ,
+			@RequestParam("businessType") String businessType ,
+			@RequestParam("content") String content,
+			HttpSession session
+			) throws APIConnectionException, APIRequestException{
+		List<PushResult> l=new ArrayList<PushResult>();
+		PushPayload pp= pushTemplate.buildPushObject_id_alias_alert(acountId,businessId,businessType,title, content);
+		PushResult r = pushTemplate.init(pp);
+		l.add(r);
+		return ResultUtil.getSlefSRSuccessList(l);
+		
+	}
+	/**
 	 * buildPushObject_all_all_message
-	 * 所有推送
+	 * 所有消息
 	 * @return
 	 * @throws APIRequestException 
 	 * @throws APIConnectionException 
 	 */
 	@RequestMapping(value={"/test/sendAllMessage"})
 	public StateResultList testSendMessage(
-			@RequestParam("contentType") String contentType ,
+			@RequestParam("businessId") Integer businessId ,
+			@RequestParam("title") String title ,
+			@RequestParam("businessType") String businessType ,
 			@RequestParam("content") String content,
 			HttpSession session
 			) throws APIConnectionException, APIRequestException{
 		List<PushResult> l=new ArrayList<PushResult>();
-			PushPayload pp= pushTemplate.buildPushObject_all_all_message(contentType,content);
+			PushPayload pp= pushTemplate.buildPushObject_all_alias_message(businessId,businessType,title,content);
 			PushResult r = pushTemplate.init(pp);
 			l.add(r);
 			return ResultUtil.getSlefSRSuccessList(l);

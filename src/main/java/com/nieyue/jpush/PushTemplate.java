@@ -17,8 +17,11 @@ import cn.jpush.api.push.model.PushPayload;
 import cn.jpush.api.push.model.SMS;
 import cn.jpush.api.push.model.audience.Audience;
 import cn.jpush.api.push.model.audience.AudienceTarget;
+import cn.jpush.api.push.model.notification.AndroidNotification;
 import cn.jpush.api.push.model.notification.IosNotification;
 import cn.jpush.api.push.model.notification.Notification;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * 
@@ -31,6 +34,8 @@ public class PushTemplate {
 	String key;
 	@Value("${myPugin.jpush.secret}")
 	String secret;
+	@Value("${myPugin.jpush.timeToLive}")
+	Long timeToLive;
 	
     
     /**
@@ -40,7 +45,9 @@ public class PushTemplate {
      * @throws APIConnectionException 
      */
     public  PushResult init( PushPayload pushPayload) throws APIConnectionException, APIRequestException {
-    	JPushClient jpushClient = new JPushClient(secret, key, null, ClientConfig.getInstance());
+    	ClientConfig clientConfig = ClientConfig.getInstance();
+    	clientConfig.setTimeToLive(timeToLive);//极光推送设置离线时间
+    	JPushClient jpushClient = new JPushClient(secret, key, null,clientConfig);
     	PushResult result = jpushClient.sendPush(pushPayload);
     	return result;
     }
@@ -48,39 +55,111 @@ public class PushTemplate {
      * 快捷地构建推送对象：所有平台，所有设备，内容为 content 的通知。
      * @return
      */
-    public  PushPayload buildPushObject_all_all_alert( String content) {
+    public  PushPayload buildPushObject_all_alias_alert( String content) {
         return PushPayload.alertAll(content);
     }
     /**
      * 快捷地构建推送对象：所有平台，所有设备，内容为 content 的消息。
+     * @param businessId 业务Id
+     * @param businessType 业务类型
+     * @param content 内容
      * @return
      */
-    public  PushPayload buildPushObject_all_all_message(String contentType, String content) {
+    public  PushPayload buildPushObject_all_alias_message(Integer businessId,String businessType,String title, String content) {
     	return  PushPayload.newBuilder()
     	        .setPlatform(Platform.all())
     	        .setAudience(Audience.all())
     	        .setMessage(Message.newBuilder()
+    	        		.setTitle(title)
     	                .setMsgContent(content)
-    	                .setContentType(contentType)
+    	                .setContentType(businessType)
+    	                .addExtra("businessId", businessId)
     	                .build())
     	        .build();
     			
     }
     /**
-     * 构建推送对象：所有平台，推送目标是别名为 "id"，通知内容为 ALERT。
+     * 快捷地构建推送对象：acountId，内容为 content 的消息。
+     * @param acountId 接受者Id
+     * @param businessId 业务Id
+     * @param businessType 业务类型
+     * @param content 内容
      * @return
      */
-    public  PushPayload buildPushObject_all_alias_alert(Integer id,String contentType,String content) {
+    public  PushPayload buildPushObject_id_alias_message(Integer acountId,Integer businessId,String businessType,String title, String content) {
+    	return  PushPayload.newBuilder()
+    			.setPlatform(Platform.all())
+    			.setAudience(Audience.alias(acountId.toString()))
+    			.setMessage(Message.newBuilder()
+    					.setTitle(title)
+    					.setMsgContent(content)
+    					.setContentType(businessType)
+    					.addExtra("businessId", businessId)
+    					.build())
+    			.build();
+    	
+    }
+    /**
+     * 构建推送对象：所有平台，推送全部，通知内容为 content。
+     * @param businessId 业务Id
+     * @param businessType 业务类型
+     * @param content 内容
+     * @return
+     */
+    public  PushPayload buildPushObject_all_alias_alert(Integer businessId,String businessType,String title,String content) {
+    	if(content==null || content.equals("")){
+    		content=title;
+    	}
+    	return  PushPayload.newBuilder()
+    			.setPlatform(Platform.all())
+    			.setAudience(Audience.all())
+    			.setNotification(Notification.newBuilder()
+    					.addPlatformNotification(IosNotification.newBuilder()
+    							.setAlert(title)
+    							.setBadge(5)
+    		                    .setSound("happy")
+    							.addExtra("businessType",businessType)
+    							.addExtra("businessId",businessId)
+    							.build())
+    					.addPlatformNotification(AndroidNotification.newBuilder()
+    							.setTitle(title)
+    							.setAlert(content)
+    							.addExtra("businessType",businessType)
+    							.addExtra("businessId",businessId)
+    							.build())
+    					.build())
+    			.build();
+    }
+    /**
+     * 构建推送对象：acountId，推送目标是别名为 "acountId"，通知内容为 content。
+     * @param acountId 业务接受者
+     * @param businessId 业务Id
+     * @param businessType 业务类型
+     * @param content 内容
+     * @return
+     */
+    public  PushPayload buildPushObject_id_alias_alert(Integer acountId,Integer businessId,String businessType,String title,String content) {
+    	if(content==null || content.equals("")){
+    		content=title;
+    	}
     	return  PushPayload.newBuilder()
         .setPlatform(Platform.all())
-        .setAudience(Audience.alias(id.toString()))
-        
-        //.setMessage(Message.content(content))
-        .setMessage(Message.newBuilder()
-                .setMsgContent(content)
-                .setContentType(contentType)
-                .build())
-       // .setNotification(Notification.alert("ALERT"))
+        .setAudience(Audience.alias(acountId.toString()))
+       .setNotification(Notification.newBuilder()
+    		   .addPlatformNotification(IosNotification.newBuilder()
+						.setAlert(title)
+						.setBadge(5)
+	                    .setSound("happy")
+						.addExtra("businessType",businessType)
+						.addExtra("businessId",businessId)
+						.build())
+				.addPlatformNotification(AndroidNotification.newBuilder()
+						.setTitle(title)
+						.setAlert(content)
+						.addExtra("businessType",businessType)
+						.addExtra("businessId",businessId)
+						.build())
+				.build())
         .build();
     }
     /**
@@ -159,12 +238,21 @@ public class PushTemplate {
         }
     }
     public static void main(String[] args) throws Exception {
-    	JPushClient jpushClient = new JPushClient("e8e6f60d043a1b4cace16cbf", "011d1f544fb77063b9192129", null, ClientConfig.getInstance());
+    	ClientConfig clientConfig = ClientConfig.getInstance();
+    	clientConfig.setTimeToLive(864000);//极光推送设置离线时间
+    	JPushClient jpushClient = new JPushClient("e8e6f60d043a1b4cace16cbf", "011d1f544fb77063b9192129", null, clientConfig);
     	String content = HttpClientUtil.doGet("http://www.newzhuan.com/article/list?pageSize=1");
-    	   // For push, all you need do is to build PushPayload object.
-    	// PushPayload payload =new PushTemplate().buildPushObject_all_all_message("新闻",content);
+    	JSONObject json = JSONObject.fromObject(content);
+    	JSONArray ja = JSONArray.fromObject(json.get("list"));
+    	JSONObject jl = JSONObject.fromObject(ja.get(0));
+    	String title = (String) jl.get("title");
+    	// For push, all you need do is to build PushPayload object.
+    	 //PushPayload payload =new PushTemplate().buildPushObject_all_all_message("新闻",content);
+    	//PushPayload payload =new PushTemplate().buildPushObject_all_alias_alert(1430,"新闻", content);
+    	//PushPayload payload =new PushTemplate().buildPushObject_all_alias_alert((Integer)jl.get("articleId"),"新闻",title,"");
+    	PushPayload payload =new PushTemplate().buildPushObject_id_alias_alert(1124,(Integer)jl.get("articleId"),"新闻",title,null);
     	//PushPayload payload =new PushTemplate().buildPushObject_all_alias_alert(1431,"积分", content);
-    	PushPayload payload =new PushTemplate().buildPushObject_all_alias_alert(1431,"收徒", content);
+    	//PushPayload payload =new PushTemplate().buildPushObject_all_alias_alert(1431,"收徒", content);
 
     	    try {
     	        PushResult result = jpushClient.sendPush(payload);

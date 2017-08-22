@@ -27,4 +27,5 @@ myPugin:
   jpush:
     key: 011d1f544fb77063b9192129
     secret: e8e6f60d043a1b4cace16cbf
+    timeToLive: 864000
     
